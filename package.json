@@ -1,12 +1,14 @@
 {
-  "name": "my-ts-lib",
+  "name": "@m9ch/utils",
   "version": "0.0.0",
-  "description": "My awesome typescript library",
+  "description": "Collection of common JavaScript / TypeScript utils",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "exports": {
@@ -18,12 +20,14 @@
     "build-fast": "tsup src/index.ts --format cjs,esm",
     "build": "pnpm run build-fast -- --dts-resolve",
     "test": "vitest run",
-    "prepublishOnly": "pnpm run build",
-    "example:dev": "vite example/ -c vite.config.js",
-    "example:build": "vite build example/ -c vite.config.js"
+    "release": "bumpp package.json --commit --push --tag && pnpm publish --access public",
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
+    "@m9ch/eslint-config-all": "^0.2.2",
+    "eslint": "^8.15.0",
     "tsup": "5.12.7",
+    "typedoc": "^0.22.15",
     "typescript": "4.6.4",
     "vite": "2.9.9",
     "vitest": "0.12.6"
