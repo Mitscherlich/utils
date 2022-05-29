@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "Collection of common JavaScript / TypeScript utils",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "files": [
     "dist"
   ],
@@ -31,5 +28,16 @@
     "typescript": "4.6.4",
     "vite": "2.9.9",
     "vitest": "0.12.6"
+  },
+  "tsup": {
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "dts": true,
+    "clean": true
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
