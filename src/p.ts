@@ -7,7 +7,7 @@ export interface POptions {
   /**
    * How many promises are resolved at the same time.
    */
-   concurrency?: number | undefined
+  concurrency?: number | undefined
 }
 
 export class P<T = any> extends Promise<Awaited<T>[]> {
@@ -50,7 +50,8 @@ export class P<T = any> extends Promise<Awaited<T>[]> {
       Array.from(this.items)
         .map(async (it, idx) => {
           const v = await it
-          if ((v as any) === VOID) return VOID as unknown as U
+          if ((v as any) === VOID)
+            return VOID as unknown as U
           return fn(v, idx)
         }),
       this.options,
@@ -63,7 +64,8 @@ export class P<T = any> extends Promise<Awaited<T>[]> {
         .map(async (it, idx) => {
           const v = await it
           const r = await fn(v, idx)
-          if (!r) return VOID as unknown as T
+          if (!r)
+            return VOID as unknown as T
           return v
         }),
       this.options,
@@ -130,7 +132,8 @@ export function pLimit(concurrency: number): LimitFn {
   const next = () => {
     activeCount -= 1
 
-    if (queue.length > 0) queue.shift()!()
+    if (queue.length > 0)
+      queue.shift()!()
   }
 
   const run = async <Args extends unknown[], R>(fn: (...args: Args) => R | Promise<R>, resolve: (arg: R | Promise<R>) => void, args: Args) => {
@@ -175,8 +178,8 @@ export function pLimit(concurrency: number): LimitFn {
     cleanQueue: {
       value: () => {
         queue.length = 0
-      }
-    }
+      },
+    },
   })
 
   return generator as LimitFn

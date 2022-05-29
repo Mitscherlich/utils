@@ -12,3 +12,7 @@ export class Defer<T> {
     })
   }
 }
+
+export const defer = <T>() => {
+  return new Defer<T>()
+}

@@ -1,4 +1,5 @@
 export * from './common'
+export * from './bem'
 export * from './defer'
 export * from './p'
 export * from './types'
