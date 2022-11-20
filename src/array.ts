@@ -2,6 +2,7 @@ import type { Arrayable, Nullable } from './types'
 
 /**
  * Convert `Arrayable<T>` to `Array<T>`
+ * @category Array
  */
 export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
   array = array ?? []
@@ -10,6 +11,7 @@ export function toArray<T>(array?: Nullable<Arrayable<T>>): Array<T> {
 
 /**
  * Unique an array
+ * @category Array
  */
 export function uniq<T>(array: readonly T[]): T[] {
   return Array.from(new Set(array))
@@ -33,6 +35,7 @@ export function at<T>(array: readonly T[] | [], index: number): T | undefined {
 
 /**
  * Get last item
+ * @category Array
  */
 export function last(array: readonly []): undefined
 export function last<T>(array: readonly T[]): T
@@ -42,6 +45,7 @@ export function last<T>(array: readonly T[]): T | undefined {
 
 /**
  * Remove an item from Array
+ * @category Array
  */
 export function remove<T>(array: T[], value: T) {
   if (!array)
