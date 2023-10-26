@@ -1,6 +1,7 @@
 export * from './array'
 export * from './bem'
 export * from './common'
+export * from './equal'
 export * from './function'
 export * from './guards'
 export * from './is'

@@ -1,19 +1,21 @@
+import pLimit from 'p-limit'
+
 /**
  * Internal marker for filtered items
  */
 const VOID = Symbol('p-void')
 
-export interface POptions {
+interface POptions {
   /**
    * How many promises are resolved at the same time.
    */
   concurrency?: number | undefined
 }
 
-export class P<T = any> extends Promise<Awaited<T>[]> {
+class PInstance<T = any> extends Promise<Awaited<T>[]> {
   private promises = new Set<T | Promise<T>>()
 
-  get promise() {
+  get promise(): Promise<Awaited<T>[]> {
     let batch
     const items = [...Array.from(this.items), ...Array.from(this.promises)]
 
@@ -28,28 +30,21 @@ export class P<T = any> extends Promise<Awaited<T>[]> {
     return batch.then(l => l.filter((i: any) => i !== VOID))
   }
 
-  constructor(
-    public items: Iterable<T> = [],
-    public options?: POptions,
-  ) {
+  constructor(public items: Iterable<T> = [], public options?: POptions) {
     super(() => {})
   }
 
   add(...args: (T | Promise<T>)[]) {
-    args.forEach((it) => {
-      this.promises.add(it)
+    args.forEach((i) => {
+      this.promises.add(i)
     })
   }
 
-  clear() {
-    this.promises.clear()
-  }
-
-  map<U>(fn: (value: Awaited<T>, index: number) => U): P<Promise<U>> {
-    return new P(
+  map<U>(fn: (value: Awaited<T>, index: number) => U): PInstance<Promise<U>> {
+    return new PInstance(
       Array.from(this.items)
-        .map(async (it, idx) => {
-          const v = await it
+        .map(async (i, idx) => {
+          const v = await i
           if ((v as any) === VOID)
             return VOID as unknown as U
           return fn(v, idx)
@@ -58,11 +53,11 @@ export class P<T = any> extends Promise<Awaited<T>[]> {
     )
   }
 
-  filter(fn: (value: Awaited<T>, index: number) => boolean | Promise<boolean>): P<Promise<T>> {
-    return new P(
+  filter(fn: (value: Awaited<T>, index: number) => boolean | Promise<boolean>): PInstance<Promise<T>> {
+    return new PInstance(
       Array.from(this.items)
-        .map(async (it, idx) => {
-          const v = await it
+        .map(async (i, idx) => {
+          const v = await i
           const r = await fn(v, idx)
           if (!r)
             return VOID as unknown as T
@@ -80,9 +75,16 @@ export class P<T = any> extends Promise<Awaited<T>[]> {
     return this.promise.then(array => array.reduce(fn, initialValue))
   }
 
+  clear() {
+    this.promises.clear()
+  }
+
   then(fn?: () => PromiseLike<any>) {
     const p = this.promise
-    return fn ? p.then(fn) : p
+    if (fn)
+      return p.then(fn)
+    else
+      return p
   }
 
   catch(fn?: (err: unknown) => PromiseLike<any>) {
@@ -97,90 +99,19 @@ export class P<T = any> extends Promise<Awaited<T>[]> {
 /**
  * Utility for managing multiple promises.
  *
- * @category Promise
+ * @see https://github.com/antfu/utils/tree/main/docs/p.md
  * @example
- * ```ts
+ * ```
  * import { p } from '@m9ch/utils'
  *
  * const items = [1, 2, 3, 4, 5]
  *
  * await p(items)
- *  .map(async i => i * 3)          // [3, 6, 9, 12, 15]
- *  .filter(async i => i % 2 === 0) // [6, 12]
+ *   .map(async i => await multiply(i, 3))
+ *   .filter(async i => await isEven(i))
+ * // [6, 12]
  * ```
  */
-export function p<T = any>(items?: Iterable<T>, options?: POptions): P<T> {
-  return new P(items, options)
-}
-
-interface LimitFn {
-  <Args extends unknown[], R>(fn: (...args: Args) => R | Promise<R>, ...args: Args): Promise<R>
-
-  readonly activeCount: number
-  readonly pendingCount: number
-
-  clearQueue: () => void
-}
-
-export function pLimit(concurrency: number): LimitFn {
-  if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0))
-    throw new TypeError('Expected `concurrency` to be a number from 1 and up')
-
-  const queue: (() => void)[] = []
-  let activeCount = 0
-
-  const next = () => {
-    activeCount -= 1
-
-    if (queue.length > 0)
-      queue.shift()!()
-  }
-
-  const run = async <Args extends unknown[], R>(fn: (...args: Args) => R | Promise<R>, resolve: (arg: R | Promise<R>) => void, args: Args) => {
-    activeCount += 1
-
-    const result = (async () => fn(...args))()
-
-    resolve(result)
-
-    try {
-      await result
-    }
-    catch {
-      // just ignore :)
-    }
-
-    next()
-  }
-
-  const enqueue = <Args extends unknown[], R>(fn: (...args: Args) => R | Promise<R>, resolve: (arg: R | Promise<R>) => void, args: Args) => {
-    queue.push(() => run(fn, resolve, args))
-
-    ;(async () => {
-      await Promise.resolve()
-
-      if (activeCount < concurrency && queue.length > 0)
-        queue.shift()!()
-    })()
-  }
-
-  const generator = <Args extends unknown[], R>(fn: (...args: Args) => R | Promise<R>, ...args: Args) => new Promise((resolve) => {
-    enqueue(fn, resolve, args)
-  })
-
-  Object.defineProperties(generator, {
-    activeCount: {
-      get: () => activeCount,
-    },
-    pendingCount: {
-      get: () => queue.length,
-    },
-    cleanQueue: {
-      value: () => {
-        queue.length = 0
-      },
-    },
-  })
-
-  return generator as LimitFn
+export function p<T = any>(items?: Iterable<T>, options?: POptions): PInstance<T> {
+  return new PInstance(items, options)
 }

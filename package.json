@@ -38,6 +38,7 @@
     "bumpp": "^9.1.1",
     "eslint": "^8.47.0",
     "esno": "^0.17.0",
+    "p-limit": "^4.0.0",
     "rollup": "^3.28.0",
     "rollup-plugin-dts": "^5.3.1",
     "rollup-plugin-esbuild": "^5.0.0",

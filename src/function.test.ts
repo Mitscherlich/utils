@@ -1,4 +1,3 @@
-import { expect, it } from 'vitest'
 import { tap } from './function'
 
 it('tap', () => {
