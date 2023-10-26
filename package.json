@@ -1,7 +1,7 @@
 {
   "name": "@m9ch/utils",
   "type": "module",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Collection of common JavaScript / TypeScript utils",
   "license": "MIT",
   "exports": {
